@@ -11,6 +11,7 @@ $selectColumn = $consult->selectColumn($dataBase,'itens_notas_fiscais','quantida
 $condition01 = 'numero > 100 and quantidade > 60';
 
 $selectAnd = $consult->selectCondition($dataBase,'itens_notas_fiscais',$condition01);
+$queryAny = $consult->queryAny($dataBase,'tabela_de_clientes','bairro','jardins');
 
-var_dump($selectAnd);
+var_dump($queryAny);
 

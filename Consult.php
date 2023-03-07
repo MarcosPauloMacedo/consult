@@ -14,11 +14,7 @@ class Consult
         }
     }
 
-    private function validateDataBase($conect)
-    {
-        $validate = $conect != null;
-        return $validate;
-    }
+  
 
     private function type($attributes)
     {
@@ -210,6 +206,31 @@ class Consult
         where $condition01";
 
         $dataTable = mysqli_query($conect,$command);
+
+        if($this->type($dataTable) != 'object')
+        {
+            return "Dados não encontrada!
+            Verifique o nome da tabela ou da coluna";
+        }
+
+        $data = [];
+        foreach($dataTable as $dataTab)
+        {
+            array_push($data,$dataTab);
+        }
+
+        return $data;
+    }
+
+    public function queryAny($conect,$nameTable,$column,$var)
+    {
+        if($this->type($conect) != 'object')
+        {
+            return "Erro ao conectar ao banco de dados";
+        }
+
+        $dataTable = mysqli_query($conect,
+        "SELECT * FROM {$nameTable} WHERE {$column} LIKE '%{$var}%'");
 
         if($this->type($dataTable) != 'object')
         {
