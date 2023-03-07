@@ -125,9 +125,8 @@ class Consult
                 if($nameTable == $table[$indexName[0]])
                 {   
                     $nameTable = $this->bringTable($conect,$nameTable);
-                    $confirmedOBJ = $this->type($nameTable) == 'object';
     
-                    if($confirmedOBJ)
+                    if($this->type($nameTable) == 'object')
                     {
                         $firstResult = $nameTable->fetch_array(MYSQLI_ASSOC);
                         $columns = $this->fetchIndex($firstResult);
@@ -173,6 +172,58 @@ class Consult
             return 'Erros ao conectar com banco de dados!
              verifique os atributos de consult';
         }
+    }
+
+    public function selectColumn($conect,$nameTable,$nameColumn)
+    {
+        if($this->type($conect) != 'object')
+        {
+            return "Erro ao conectar ao banco de dados";
+        }
+
+        $data = [];
+        $dataColumn = mysqli_query($conect,
+        "SELECT {$nameColumn} from {$nameTable}");
+        
+        if($this->type($dataColumn) != 'object')
+        {
+            return "Dados não encontrada!
+            Verifique o nome da tabela ou da coluna";
+        }
+
+        foreach($dataColumn as $dataCo)
+        {
+            array_push($data,$dataCo[$nameColumn]);
+        }
+
+        return $data;
+    }
+
+    public function selectCondition($conect,$nameTable,$condition01)
+    {
+        if($this->type($conect) != 'object')
+        {
+            return "Erro ao conectar ao banco de dados";
+        }
+
+        $command = "SELECT * FROM {$nameTable}
+        where $condition01";
+
+        $dataTable = mysqli_query($conect,$command);
+
+        if($this->type($dataTable) != 'object')
+        {
+            return "Dados não encontrada!
+            Verifique o nome da tabela ou da coluna";
+        }
+
+        $data = [];
+        foreach($dataTable as $dataTab)
+        {
+            array_push($data,$dataTab);
+        }
+
+        return $data;
     }
 }
 ?>
