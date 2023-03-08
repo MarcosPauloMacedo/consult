@@ -14,8 +14,6 @@ class Consult
         }
     }
 
-  
-
     private function type($attributes)
     {
         $typeAttributes = gettype($attributes);
@@ -36,11 +34,22 @@ class Consult
             return $dataTable;
         }
     }
-
+    
     private function fetchIndex($table)
     {
         $indexName = array_keys($table);
         return $indexName;
+    }
+    
+    private function addData($vars)
+    {
+        $data = [];
+        foreach($vars as $var)
+        {
+            array_push($data,$var);
+        }
+    
+        return $data;
     }
 
     public function conectDatabase($host,$user,$password,$database)
@@ -64,7 +73,7 @@ class Consult
         var_dump($attributes);
         exit;
     }
-
+    
     public function bringDataTable($conect,$nameTable)
     {   
         $data = [];
@@ -92,14 +101,14 @@ class Consult
         }
         else
         {
-            $tablesAll = [];
             $OBJtablesAll = mysqli_query($conect,"SHOW TABLES");
-    
-            foreach($OBJtablesAll as $OBJTables)
-            {
-                array_push($tablesAll,$OBJTables);
-            }
-    
+            // foreach($OBJtablesAll as $obj)
+            // {
+            //     var_dump($obj['Tables_in_sucos_vendas']);
+            // }
+            // exit;
+
+            $tablesAll = $this->addData($OBJtablesAll);
             return $tablesAll;
         }
     }
@@ -121,18 +130,15 @@ class Consult
                 if($nameTable == $table[$indexName[0]])
                 {   
                     $nameTable = $this->bringTable($conect,$nameTable);
-    
-                    if($this->type($nameTable) == 'object')
-                    {
-                        $firstResult = $nameTable->fetch_array(MYSQLI_ASSOC);
-                        $columns = $this->fetchIndex($firstResult);
-    
-                        return $columns;
-                    }
-                    else
+
+                    if($this->type($nameTable) != 'object')
                     {
                         return $nameTable;
                     }
+                    
+                    $firstResult = $nameTable->fetch_array(MYSQLI_ASSOC);
+                    $columns = $this->fetchIndex($firstResult);
+                    return $columns;
                 }
             }
 
@@ -144,24 +150,17 @@ class Consult
     {   
         if(!empty($conect))
         {
-            $selectedData = [];
             $dataFound = mysqli_query($conect,"SELECT 
             * FROM {$nameTable} WHERE {$column} = {$data}");
             $dataFound = $this->validateTable($dataFound);
-
-            if($this->type($dataFound) == 'object')
-            {
-                foreach($dataFound as $data)
-                {
-                    array_push($selectedData,$data);
-                }
-    
-                return $selectedData;
-            }
-            else
+            
+            if($this->type($dataFound) != 'object')
             {
                 return $dataFound;
             }
+            
+            $selectedData = $this->addData($dataFound);
+            return $selectedData;
         }
         else
         {
@@ -177,7 +176,6 @@ class Consult
             return "Erro ao conectar ao banco de dados";
         }
 
-        $data = [];
         $dataColumn = mysqli_query($conect,
         "SELECT {$nameColumn} from {$nameTable}");
         
@@ -186,12 +184,8 @@ class Consult
             return "Dados não encontrada!
             Verifique o nome da tabela ou da coluna";
         }
-
-        foreach($dataColumn as $dataCo)
-        {
-            array_push($data,$dataCo[$nameColumn]);
-        }
-
+        
+        $data = $this->addData($dataColumn);
         return $data;
     }
 
@@ -213,12 +207,7 @@ class Consult
             Verifique o nome da tabela ou da coluna";
         }
 
-        $data = [];
-        foreach($dataTable as $dataTab)
-        {
-            array_push($data,$dataTab);
-        }
-
+        $data = $this->addData($dataTable);
         return $data;
     }
 
@@ -238,12 +227,7 @@ class Consult
             Verifique o nome da tabela ou da coluna";
         }
 
-        $data = [];
-        foreach($dataTable as $dataTab)
-        {
-            array_push($data,$dataTab);
-        }
-
+        $data = $this->addData($dataTable);
         return $data;
     }
 }
