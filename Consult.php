@@ -236,5 +236,34 @@ class Consult
         
         return $this->error('dataBase');
     }
+
+    public function createTable($conect,$nameTable,$parameters)
+    {
+        if($this->validateData($conect))
+        {
+            $newTable = mysqli_query($conect,"CREATE TABLE {$nameTable} 
+            ($parameters);");
+
+            $sms = $newTable ? 'Tabela criado com sucesso!' : 'Erro ao criar a tabela';
+            return $sms;
+        }
+    }
+
+    public function dropTable($conect,$nameTable)
+    {
+        $tablesAll = $this->tablesAll($conect);
+
+        foreach($tablesAll as $tables)
+        {
+            if($tables == $nameTable)
+            {
+                $drop = mysqli_query($conect,"DROP TABLE {$nameTable}");
+                var_dump($drop);
+
+                $drop = $drop ? 'tabela apagado com sucesso!' : 'tabela não foi apagada';
+                return $drop;
+            }
+        }
+    }
 }
 ?>
