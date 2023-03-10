@@ -1,38 +1,56 @@
 <?php 
 class Consult
 {  
-    private function validateTable($table)
-    {
-        if(empty($table))
-        {
-            return "tabela não encontrada!
-            verifique o nome e tente novamente.";
-        }
-        else
-        {
-            return $table;
-        }
-    }
-
     private function type($attributes)
     {
         $typeAttributes = gettype($attributes);
         return $typeAttributes;
     }
+
+    private function validateData($conect)
+    {
+        $validateConect = $this->type($conect) == 'object';
+        return $validateConect;
+    }
+    
+    private function error($string)
+    {
+        $errorTable = "Dados não encontrada!
+        Verifique o nome da tabela ou da coluna";
+
+        $errorDataBase = "Erro ao conectar ao banco de dados";
+
+        switch($string)
+        {
+            case $string == 'table' : return $errorTable;
+            break;
+            
+            case $string == 'dataBase' : return $errorDataBase;
+            break;
+        }
+    }
+
+    private function validateTable($table)
+    {
+        if($this->validateData($table))
+        {
+            return $table;
+        }
+
+        return $this->error('table');
+    }
     
     private function bringTable($conect,$nameTable)
     {
-        if(empty($conect))
+        if($this->validateData($conect))
         {
-            return 'dados de acesso incorretos, verifique os
-            parâmetros de consultas';
-        }
-        else{
             $dataTable = mysqli_query($conect,"SELECT * FROM {$nameTable}");
             $dataTable = $this->validateTable($dataTable);
             
             return $dataTable;
         }
+
+        return $this->error('database');
     }
     
     private function fetchIndex($table)
@@ -48,10 +66,10 @@ class Consult
         {
             array_push($data,$var);
         }
-    
+        
         return $data;
     }
-
+    
     public function conectDatabase($host,$user,$password,$database)
     {
         $conect = new mysqli(
@@ -62,10 +80,8 @@ class Consult
         {
             return NULL;
         }
-        else
-        {
-            return $conect;
-        }
+        
+        return $conect;
     }
     
     public function debug($attributes)
@@ -79,38 +95,34 @@ class Consult
         $data = [];
         $dataTable = $this->bringTable($conect,$nameTable);
 
-        if($this->type($dataTable) != 'object')
+        if($this->validateData($dataTable))
         {
-            return $dataTable;
-        }
-        else
-        {
-            foreach($dataTable as $dataTab)
-            {
-                array_push($data,$dataTab);
-            }
+            $data = $this->addData($dataTable);
             return $data;
         }
+
+        return $dataTable;
     }
 
     public function tablesAll($conect)
     {
-        if(empty($conect))
-        {
-            return "erro ao conectar com o banco de dados";
-        }
-        else
+        if($this->validateData($conect))
         {
             $OBJtablesAll = mysqli_query($conect,"SHOW TABLES");
-            // foreach($OBJtablesAll as $obj)
-            // {
-            //     var_dump($obj['Tables_in_sucos_vendas']);
-            // }
-            // exit;
+    
+            $tablesNoFormat = $this->addData($OBJtablesAll);
+            $tablesAll = [];
 
-            $tablesAll = $this->addData($OBJtablesAll);
+            foreach($tablesNoFormat as $tables)
+            {
+                $index = $this->fetchIndex($tables);
+                 array_push($tablesAll,$tables[$index[0]]);
+            }
+
             return $tablesAll;
         }
+
+        return $this->error('dataBase');
     }
 
     public function nameColumns($conect,$nameTable)
@@ -131,7 +143,7 @@ class Consult
                 {   
                     $nameTable = $this->bringTable($conect,$nameTable);
 
-                    if($this->type($nameTable) != 'object')
+                    if(!$this->validateData($nameTable))
                     {
                         return $nameTable;
                     }
@@ -142,19 +154,19 @@ class Consult
                 }
             }
 
-            return "tabela não encontrada!";
+            return $this->error('table');
         }
     }
 
     public function selectFrom($conect,$nameTable,$column,$data)
     {   
-        if(!empty($conect))
+        if($this->validateData($conect))
         {
             $dataFound = mysqli_query($conect,"SELECT 
             * FROM {$nameTable} WHERE {$column} = {$data}");
             $dataFound = $this->validateTable($dataFound);
             
-            if($this->type($dataFound) != 'object')
+            if(!$this->validateData($dataFound))
             {
                 return $dataFound;
             }
@@ -162,73 +174,67 @@ class Consult
             $selectedData = $this->addData($dataFound);
             return $selectedData;
         }
-        else
-        {
-            return 'Erros ao conectar com banco de dados!
-             verifique os atributos de consult';
-        }
+        
+        return $this->error('dataBase');
     }
 
     public function selectColumn($conect,$nameTable,$nameColumn)
     {
-        if($this->type($conect) != 'object')
+        if($this->validateData($conect))
         {
-            return "Erro ao conectar ao banco de dados";
+            $dataColumn = mysqli_query($conect,
+            "SELECT {$nameColumn} from {$nameTable}");
+
+            if(!$this->validateData($dataColumn))
+            {
+                return $this->error('table');
+            }
+            
+            $data = $this->addData($dataColumn);
+            return $data;
         }
 
-        $dataColumn = mysqli_query($conect,
-        "SELECT {$nameColumn} from {$nameTable}");
-        
-        if($this->type($dataColumn) != 'object')
-        {
-            return "Dados não encontrada!
-            Verifique o nome da tabela ou da coluna";
-        }
-        
-        $data = $this->addData($dataColumn);
-        return $data;
+        return $this->error('dataBase');
     }
 
-    public function selectCondition($conect,$nameTable,$condition01)
+    public function selectCondition($conect,$nameTable,$condition)
     {
-        if($this->type($conect) != 'object')
+        if($this->validateData($conect))
         {
-            return "Erro ao conectar ao banco de dados";
+            $command = "SELECT * FROM {$nameTable}
+            where $condition";
+    
+            $dataTable = mysqli_query($conect,$command);
+    
+            if(!$this->validateData($dataTable))
+            {
+                return $this->error('table');
+            }
+
+            $data = $this->addData($dataTable);
+            return $data;
         }
 
-        $command = "SELECT * FROM {$nameTable}
-        where $condition01";
-
-        $dataTable = mysqli_query($conect,$command);
-
-        if($this->type($dataTable) != 'object')
-        {
-            return "Dados não encontrada!
-            Verifique o nome da tabela ou da coluna";
-        }
-
-        $data = $this->addData($dataTable);
-        return $data;
+        return $this->error('dataBase');
     }
 
     public function queryAny($conect,$nameTable,$column,$var)
     {
-        if($this->type($conect) != 'object')
+        if($this->validateData($conect))
         {
-            return "Erro ao conectar ao banco de dados";
+            $dataTable = mysqli_query($conect,
+            "SELECT * FROM {$nameTable} WHERE {$column} LIKE '%{$var}%'");
+    
+            if(!$this->validateData($dataTable))
+            {
+                return $this->error('table');
+            }
+    
+            $data = $this->addData($dataTable);
+            return $data;
         }
-
-        $dataTable = mysqli_query($conect,
-        "SELECT * FROM {$nameTable} WHERE {$column} LIKE '%{$var}%'");
-
-        if($this->type($dataTable) != 'object')
-        {
-            return "Dados não encontrada!
-            Verifique o nome da tabela ou da coluna";
-        }
-
-        $data = $this->addData($dataTable);
-        return $data;
+        
+        return $this->error('dataBase');
     }
 }
 ?>
