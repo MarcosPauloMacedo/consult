@@ -8,19 +8,11 @@ class Consult extends ConsultProtected
         $consultMethods = get_class_methods(new Consult);
         $protectedMethods =  get_class_methods(new ConsultProtected);
         
-        $key = array_search($consultMethods,$protectedMethods,true);
-        // if($kei !== )
-
-        // foreach($consultMethods as $consult)
-        // {
-        //     foreach($protectedMethods as $protected)
-        //     {
-        //         if($consult == $protected)
-        //         {
-                    
-        //         }
-        //     }
-        // }
+        foreach($consultMethods as $consult)
+        {
+            $m = array_search($consult,$protectedMethods);
+            var_dump($m);
+        }
     }
 
     public function checkGet($name)
