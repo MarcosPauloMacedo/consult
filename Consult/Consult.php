@@ -1,87 +1,39 @@
 <?php 
-class Consult
+require_once('ConsultProtected.php');
+
+class Consult extends ConsultProtected
 {  
-    private function type($attributes)
+    public function allMethods()
     {
-        $typeAttributes = gettype($attributes);
-        return $typeAttributes;
-    }
-
-    private function validateData($conect)
-    {
-        $validateConect = $this->type($conect) == 'object';
-        return $validateConect;
-    }
-    
-    private function error($string)
-    {
-        $errorTable = "Dados não encontrada!
-        Verifique o nome da tabela ou da coluna";
-
-        $errorDataBase = "Erro ao conectar ao banco de dados";
-
-        switch($string)
-        {
-            case $string == 'table' : return $errorTable;
-            break;
-            
-            case $string == 'dataBase' : return $errorDataBase;
-            break;
-        }
-    }
-
-    private function validateTable($table)
-    {
-        if($this->validateData($table))
-        {
-            return $table;
-        }
-
-        return $this->error('table');
-    }
-    
-    private function bringTable($conect,$nameTable)
-    {
-        if($this->validateData($conect))
-        {
-            $dataTable = mysqli_query($conect,"SELECT * FROM {$nameTable}");
-            $dataTable = $this->validateTable($dataTable);
-            
-            return $dataTable;
-        }
-
-        return $this->error('database');
-    }
-    
-    private function fetchIndex($table)
-    {
-        $indexName = array_keys($table);
-        return $indexName;
-    }
-    
-    private function addData($vars)
-    {
-        $data = [];
-        foreach($vars as $var)
-        {
-            array_push($data,$var);
-        }
+        $consultMethods = get_class_methods(new Consult);
+        $protectedMethods =  get_class_methods(new ConsultProtected);
         
-        return $data;
+        $key = array_search($consultMethods,$protectedMethods,true);
+        // if($kei !== )
+
+        // foreach($consultMethods as $consult)
+        // {
+        //     foreach($protectedMethods as $protected)
+        //     {
+        //         if($consult == $protected)
+        //         {
+                    
+        //         }
+        //     }
+        // }
     }
-    
-    public function conectDatabase($host,$user,$password,$database)
+
+    public function checkGet($name)
     {
-        $conect = new mysqli(
-            $host,$user,$password,$database
-        );
+        return !empty($_POST[$name]);
+    }
+
+    public function numberFunctions($obj)
+    {
+        array_push($functionsAll,$obj);
         
-        if($conect -> connect_errno)
-        {
-            return NULL;
-        }
-        
-        return $conect;
+        $functionsAll = [];
+        return $functionsAll;
     }
     
     public function debug($attributes)
@@ -128,7 +80,7 @@ class Consult
     public function nameColumns($conect,$nameTable)
     {
         $tablesAll = $this->tablesAll($conect);
-
+        
         if($this->type($tablesAll) != 'array')
         {
             return $tablesAll;
@@ -137,9 +89,7 @@ class Consult
         {
             foreach($tablesAll as $table)
             {   
-                $indexName = $this->fetchIndex($table);
-    
-                if($nameTable == $table[$indexName[0]])
+                if($nameTable == $table)
                 {   
                     $nameTable = $this->bringTable($conect,$nameTable);
 
