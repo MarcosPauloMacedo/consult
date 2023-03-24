@@ -70,20 +70,6 @@ class Consult
         return $data;
     }
     
-    public function conectDatabase($host,$user,$password,$database)
-    {
-        $conect = new mysqli(
-            $host,$user,$password,$database
-        );
-        
-        if($conect -> connect_errno)
-        {
-            return NULL;
-        }
-        
-        return $conect;
-    }
-    
     public function debug($attributes)
     {
         var_dump($attributes);
