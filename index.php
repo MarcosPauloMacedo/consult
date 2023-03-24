@@ -1,6 +1,6 @@
 <?php 
     include_once('config.php');
-    include_once('Consult.php');
+    include_once('Consult/Consult.php');
 ?>
 <!DOCTYPE html>
 <html lang="PT-BR">
@@ -14,56 +14,84 @@
     <h1>MYSQL</h1>
 
     <?php 
-    if(!empty($conect))
-    {
-        ?>
+    if(!empty($conect)){
+    ?>
         <div>
             <h2>Tabelas</h2>
             <?php 
-            $consult = new Consult();
-            $nameTables = $consult->tablesAll($conect);
-            foreach($nameTables as $name)
-            {
+                $consult = new Consult();
+                $nameTables = $consult->tablesAll($conect);
+
+                foreach($nameTables as $name):
                 ?>
-                <p><?=$name ?></p>
+                <p><?=$name?></p>
                 <?php 
-            }
+                endforeach;
             ?>
         </div>
         
+        <h2>Funções</h2>
         <select name="" id="">
             <option value="">Nome</option>
             <option value="">Endereco</option>
         </select>
 
         <div>
-            <?php
-            if(!empty($_POST['nomeTabela']))
-            {
-                var_dump($conect);
-                $dataTable = $consult->bringDataTable($conect,$_POST['nomeTabela']);
-            } 
-            ?>
-
             <h2>Conectar Tabela</h2>
 
             <form action="" method="POST">
                 <input type="text" name="nomeTabela" placeholder="nome da tabela">
                 <button>Verificar Dados</button>
             </form>
+
             <?php
-            if(!empty($dataTable))
-            {
-                foreach($dataTable as $data)
-                {
-                   var_dump($data);
-                }
-            }
-        }
-        else{
-            echo 'error';
-        }
+            if($consult->checkGet('nomeTabela')):
+                $nameTable = $_POST['nomeTabela'];
+
+                $dataTable = $consult->bringDataTable($conect,$nameTable);
+                
+                if(gettype($dataTable) == 'array'):
+                    $columns = $consult->nameColumns($conect,$nameTable);
+                    ?>
+                        <table>
+                            <thead>
+                                <?php
+                                foreach($columns as $column):
+                                ?>
+                                    <th><?=$column?></th>
+                                <?php
+                                endforeach;
+                                ?>
+
+                            </thead>
+                            <?php
+                                foreach($dataTable as $data):
+                            ?>
+                                <tbody>
+                                    <?php
+                                    foreach($data as $dat)
+                                    {
+                                    ?>
+                                        <td><?=$dat?></td>
+                                        <?php
+                                    }
+                                    ?>
+                                </tbody>
+                                <?php
+                                endforeach;
+                                ?>
+                        </table>
+                    <?php
+                endif;
+            endif;
+            
             ?>
         </div>
+    <?php
+    }else
+    {
+        echo 'error';
+    }
+    ?>
 </body>
 </html>
