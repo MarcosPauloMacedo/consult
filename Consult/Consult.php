@@ -7,12 +7,17 @@ class Consult extends ConsultProtected
     {
         $consultMethods = get_class_methods(new Consult);
         $protectedMethods =  get_class_methods(new ConsultProtected);
-        
-        foreach($consultMethods as $consult)
+
+        $sizeM = count($consultMethods);
+        $sizeP = count($protectedMethods);
+        $methodsConsultPublic = [];
+
+        for($i=0; $i < ($sizeM - $sizeP); $i++)
         {
-            $m = array_search($consult,$protectedMethods);
-            var_dump($m);
+            array_push($methodsConsultPublic,$consultMethods[$i]);
         }
+
+        return $methodsConsultPublic;
     }
 
     public function checkGet($name)

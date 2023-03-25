@@ -6,13 +6,14 @@ class ConsultProtected
         $typeAttributes = gettype($attributes);
         return $typeAttributes;
     }
-
+    
     protected function validateData($conect)
     {
         $validateConect = $this->type($conect) == 'object';
         return $validateConect;
     }
     
+
     protected function error($string)
     {
         $errorTable = "Dados não encontrada!

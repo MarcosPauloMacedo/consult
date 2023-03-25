@@ -1,5 +1,5 @@
 <?php 
-    include_once('config.php');
+    include_once('Config/config.php');
     include_once('Consult/Consult.php');
 ?>
 <!DOCTYPE html>
@@ -32,8 +32,17 @@
         
         <h2>Funções</h2>
         <select name="" id="">
-            <option value="">Nome</option>
-            <option value="">Endereco</option>
+            <?php 
+                $methodsAll = $consult->allMethods();
+                foreach($methodsAll as $methods)
+                {
+                    ?>
+
+                    <option value=""><?=$methods?></option>
+
+                    <?php
+                }
+            ?>
         </select>
 
         <div>
