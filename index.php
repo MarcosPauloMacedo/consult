@@ -12,24 +12,26 @@
 </head>
 <body>
     <h1>MYSQL</h1>
-
     <?php 
     if(!empty($conect)){
-    ?>
+        ?>
         <div>
             <h2>Tabelas</h2>
             <?php 
-                $consult = new Consult();
-                $nameTables = $consult->tablesAll($conect);
-
+                $consult = new Consult($conect);
+                $nameTables = $consult->tablesAll();
+                $methodsAll = $consult->allMethods();
+                var_dump($methodsAll);
+                
                 foreach($nameTables as $name):
-                ?>
+                    ?>
                 <p><?=$name?></p>
                 <?php 
                 endforeach;
-            ?>
+                ?>
         </div>
         
+        <?php var_dump($consult->conect()); ?>
         <h2>Funções</h2>
         <select name="" id="">
             <?php 
@@ -52,12 +54,11 @@
                 <input type="text" name="nomeTabela" placeholder="nome da tabela">
                 <button>Verificar Dados</button>
             </form>
-
             <?php
             if($consult->checkGet('nomeTabela')):
                 $nameTable = $_POST['nomeTabela'];
 
-                $dataTable = $consult->bringDataTable($conect,$nameTable);
+                $dataTable = $consult->bringDataTable($nameTable);
                 
                 if(gettype($dataTable) == 'array'):
                     $columns = $consult->nameColumns($conect,$nameTable);

@@ -17,11 +17,9 @@ else
     echo 'funcionando';
 }
 
-$consult = new Consult();
+// $conect = new DateTime();
 
-$tablesAll = $consult->tablesAll($conect);
-$bringDataTable = $consult->bringDataTable($conect,'tabela_de_vendedores');
-$nameColumn = $consult->nameColumns($conect,'tabela_de_vendedores');
-$methods = $consult->allMethods();
+$consult = new Consult($conect);
+$dados = $consult->tablesAll();
 
-var_dump($methods);
+var_dump($dados);

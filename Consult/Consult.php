@@ -3,34 +3,9 @@ require_once('ConsultProtected.php');
 
 class Consult extends ConsultProtected
 {  
-    public function allMethods()
+    public function __construct($conect)
     {
-        $consultMethods = get_class_methods(new Consult);
-        $protectedMethods =  get_class_methods(new ConsultProtected);
-
-        $sizeM = count($consultMethods);
-        $sizeP = count($protectedMethods);
-        $methodsConsultPublic = [];
-
-        for($i=0; $i < ($sizeM - $sizeP); $i++)
-        {
-            array_push($methodsConsultPublic,$consultMethods[$i]);
-        }
-
-        return $methodsConsultPublic;
-    }
-
-    public function checkGet($name)
-    {
-        return !empty($_POST[$name]);
-    }
-
-    public function numberFunctions($obj)
-    {
-        array_push($functionsAll,$obj);
-        
-        $functionsAll = [];
-        return $functionsAll;
+        parent::__construct($conect);
     }
     
     public function debug($attributes)
@@ -38,11 +13,46 @@ class Consult extends ConsultProtected
         var_dump($attributes);
         exit;
     }
+
+    public function allMethods()
+    {
+        try{
+            if($this->databaseConected())
+            {
+                $mysqli = new mysqli();
+                $consultMethods = get_class_methods(new Consult($mysqli));
+                $protectedMethods =  get_class_methods(new ConsultProtected($mysqli));
+        
+                $sizeM = count($consultMethods);
+                $sizeP = count($protectedMethods);
+                $methodsConsultPublic = [];
+        
+                for($i=0; $i < ($sizeM - $sizeP); $i++)
+                {
+                    array_push($methodsConsultPublic,$consultMethods[$i]);
+                }
+        
+                return $methodsConsultPublic;
+            }
+
+            throw new Exception($this->error('database'));
+            
+        }
+        catch(Exception $exec)
+        {
+            $this->debug($exec->getMessage());
+        }
+    }
+
+    public function checkGet($name)
+    {
+        return !empty($_POST[$name]);
+    }
     
-    public function bringDataTable($conect,$nameTable)
+    public function bringDataTable($nameTable)
     {   
         $data = [];
-        $dataTable = $this->bringTable($conect,$nameTable);
+        $dataTable = $this->bringTable($this->conect,$nameTable);
 
         if($this->validateData($dataTable))
         {
@@ -53,30 +63,37 @@ class Consult extends ConsultProtected
         return $dataTable;
     }
 
-    public function tablesAll($conect)
-    {
-        if($this->validateData($conect))
+    public function tablesAll()
+    {   
+        try
         {
-            $OBJtablesAll = mysqli_query($conect,"SHOW TABLES");
-    
-            $tablesNoFormat = $this->addData($OBJtablesAll);
-            $tablesAll = [];
-
-            foreach($tablesNoFormat as $tables)
+            if($this->databaseConected())
             {
-                $index = $this->fetchIndex($tables);
-                 array_push($tablesAll,$tables[$index[0]]);
+                $OBJtablesAll = mysqli_query($this->conect,"SHOW TABLES");
+        
+                $tablesNoFormat = $this->addData($OBJtablesAll);
+                $tablesAll = [];
+    
+                foreach($tablesNoFormat as $tables)
+                {
+                    $index = $this->fetchIndex($tables);
+                     array_push($tablesAll,$tables[$index[0]]);
+                }
+    
+                return $tablesAll;
             }
-
-            return $tablesAll;
+    
+            throw new Exception($this->error('database'));
         }
-
-        return $this->error('dataBase');
+        catch(Exception $exec)
+        {
+            $this->debug($exec->getMessage());
+        }
     }
 
-    public function nameColumns($conect,$nameTable)
+    public function nameColumns($nameTable)
     {
-        $tablesAll = $this->tablesAll($conect);
+        $tablesAll = $this->tablesAll($this->conect);
         
         if($this->type($tablesAll) != 'array')
         {
@@ -88,7 +105,7 @@ class Consult extends ConsultProtected
             {   
                 if($nameTable == $table)
                 {   
-                    $nameTable = $this->bringTable($conect,$nameTable);
+                    $nameTable = $this->bringTable($this->conect,$nameTable);
 
                     if(!$this->validateData($nameTable))
                     {
@@ -105,11 +122,11 @@ class Consult extends ConsultProtected
         }
     }
 
-    public function selectFrom($conect,$nameTable,$column,$data)
+    public function selectFrom($nameTable,$column,$data)
     {   
-        if($this->validateData($conect))
+        if($this->databaseConected())
         {
-            $dataFound = mysqli_query($conect,"SELECT 
+            $dataFound = mysqli_query($this->conect,"SELECT 
             * FROM {$nameTable} WHERE {$column} = {$data}");
             $dataFound = $this->validateTable($dataFound);
             
@@ -125,11 +142,11 @@ class Consult extends ConsultProtected
         return $this->error('dataBase');
     }
 
-    public function selectColumn($conect,$nameTable,$nameColumn)
+    public function selectColumn($nameTable,$nameColumn)
     {
-        if($this->validateData($conect))
+        if($this->databaseConected())
         {
-            $dataColumn = mysqli_query($conect,
+            $dataColumn = mysqli_query($this->conect,
             "SELECT {$nameColumn} from {$nameTable}");
 
             if(!$this->validateData($dataColumn))
@@ -144,14 +161,14 @@ class Consult extends ConsultProtected
         return $this->error('dataBase');
     }
 
-    public function selectCondition($conect,$nameTable,$condition)
+    public function selectCondition($nameTable,$condition)
     {
-        if($this->validateData($conect))
+        if($this->databaseConected())
         {
             $command = "SELECT * FROM {$nameTable}
             where $condition";
     
-            $dataTable = mysqli_query($conect,$command);
+            $dataTable = mysqli_query($this->conect,$command);
     
             if(!$this->validateData($dataTable))
             {
@@ -165,11 +182,11 @@ class Consult extends ConsultProtected
         return $this->error('dataBase');
     }
 
-    public function queryAny($conect,$nameTable,$column,$var)
+    public function queryAny($nameTable,$column,$var)
     {
-        if($this->validateData($conect))
+        if($this->databaseConected())
         {
-            $dataTable = mysqli_query($conect,
+            $dataTable = mysqli_query($this->conect,
             "SELECT * FROM {$nameTable} WHERE {$column} LIKE '%{$var}%'");
     
             if(!$this->validateData($dataTable))
@@ -184,11 +201,11 @@ class Consult extends ConsultProtected
         return $this->error('dataBase');
     }
 
-    public function createTable($conect,$nameTable,$parameters)
+    public function createTable($nameTable,$parameters)
     {
-        if($this->validateData($conect))
+        if($this->databaseConected())
         {
-            $newTable = mysqli_query($conect,"CREATE TABLE {$nameTable} 
+            $newTable = mysqli_query($this->conect,"CREATE TABLE {$nameTable} 
             ($parameters);");
 
             $sms = $newTable ? 'Tabela criado com sucesso!' : 'Erro ao criar a tabela';
@@ -196,15 +213,15 @@ class Consult extends ConsultProtected
         }
     }
 
-    public function dropTable($conect,$nameTable)
+    public function dropTable($nameTable)
     {
-        $tablesAll = $this->tablesAll($conect);
+        $tablesAll = $this->tablesAll($this->conect);
 
         foreach($tablesAll as $tables)
         {
             if($tables == $nameTable)
             {
-                $drop = mysqli_query($conect,"DROP TABLE {$nameTable}");
+                $drop = mysqli_query($this->conect,"DROP TABLE {$nameTable}");
                 var_dump($drop);
 
                 $drop = $drop ? 'tabela apagado com sucesso!' : 'tabela não foi apagada';
