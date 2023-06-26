@@ -7,6 +7,7 @@ $password = '';
 $database = 'sucos_vendas';
 
 $conect = new mysqli($host,$user,$password,$database);
+$cone = null;
 
 if($conect -> connect_errno)
 {
@@ -17,9 +18,8 @@ else
     echo 'funcionando';
 }
 
-// $conect = new DateTime();
-
-$consult = new Consult($conect);
+$consult = new Consult('$conect');
 $dados = $consult->tablesAll();
+$test = $consult->nameColumns('notas_fiscais');
 
-var_dump($dados);
+var_dump($test);

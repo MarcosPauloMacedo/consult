@@ -5,6 +5,11 @@ class ConsultProtected
     
     protected function __construct($conect)
     {   
+        $this->databaseConected($conect);
+    }
+
+    protected function databaseConected($conect)
+    {
         try{
             if(!is_object($conect))
             {
@@ -21,13 +26,8 @@ class ConsultProtected
         }
         catch(Exception $exec)
         {
-            var_dump($exec->getMessage());
+            $this->debug($exec->getMessage());
         }
-    }
-
-    public function databaseConected()
-    {
-        return !empty($this->conect);
     }
 
     protected function type($attributes)
@@ -44,42 +44,27 @@ class ConsultProtected
 
     protected function error($typeError)
     {
-        $errorTable = "Dados não encontrados!
-        Verifique o nome da tabela ou da coluna";
-
-        $errorDataBase = "Erro ao conectar ao banco de dados!";
-
         switch($typeError)
         {
-            case $typeError == 'table' : return $errorTable;
+            case $typeError == 'table' : return "Dados não encontrados!
+            Verifique o nome da tabela ou da coluna";
             break;
             
-            case $typeError == 'database' : return $errorDataBase;
+            case $typeError == 'database' : return "Erro ao conectar ao banco de dados!";
             break;
         }
     }
 
     protected function validateTable($table)
     {
-        if($this->validateData($table))
-        {
-            return $table;
-        }
-
-        return $this->error('table');
+        return $table instanceof mysqli_result ? mysqli_fetch_all($table,MYSQLI_ASSOC) :
+        $this->error('table');
     }
-    
-    protected function bringTable($nameTable)
-    {
-        if($this->databaseConected())
-        {   
-            $dataTable = mysqli_query($this->conect,"SELECT * FROM {$nameTable}");
-            $dataTable = $this->validateTable($dataTable);
-            
-            return $dataTable;
-        }
 
-        return $this->error('database');
+    public function debug($attributes)
+    {
+        var_dump($attributes);
+        exit;
     }
     
     protected function fetchIndex($table)
