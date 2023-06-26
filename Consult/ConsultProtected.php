@@ -83,4 +83,14 @@ class ConsultProtected
         
         return $data;
     }
+
+    protected function returnArrayOfElements($query,$assoc)
+    {
+        return  mysqli_fetch_all(mysqli_query($this->conect,$query),$assoc);
+    }
+
+    protected function executeQuery($query)
+    {
+        return mysqli_query($this->conect,$query);
+    }
 }

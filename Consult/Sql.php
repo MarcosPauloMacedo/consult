@@ -26,7 +26,7 @@ interface Sql {
     //busca dados de uma condição específica
     public function selectCondition($nameTable,$condition);
 
-    //Consulta atravez do like 
+    //Consulta atraves do like 
     public function queryAny($nameTable,$column,$var);
 
     // criar uma tabela

@@ -44,7 +44,8 @@ class Consult extends ConsultProtected implements Sql
     
     public function bringDataTable($nameTable)
     {   
-        return $this->validateTable(mysqli_query($this->conect,"SELECT * FROM {$nameTable}"));
+        $query = "SELECT * FROM {$nameTable}";
+        return $this->validateTable($this->executeQuery($query));
     }
 
     public function tablesAll()
@@ -179,13 +180,22 @@ class Consult extends ConsultProtected implements Sql
 
     public function orderBy($table,$data, $order)
     {
+        try{  
+            $query = "SELECT * FROM $table ORDER BY $data $order";
+            return $this->returnArrayOfElements($query,MYSQLI_ASSOC);
+
+        } catch(Exception $exec)
+        {
+            $this->debug($exec->getMessage());
+        }
+    }
+
+    public function getGroupBy($table,$data,$order)
+    {
         try{
-            $dataOrderBy = mysqli_query($this->conect,"SELECT * FROM $table
-            ORDER BY $data $order");
-
-            $dataOrderByArray = mysqli_fetch_all($dataOrderBy, MYSQLI_ASSOC);
-            return $dataOrderByArray;
-
+            $query = '';
+            return $this->returnArrayOfElements($data,MYSQLI_ASSOC);
+            
         } catch(Exception $exec)
         {
             $this->debug($exec->getMessage());
